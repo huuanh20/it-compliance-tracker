@@ -81,6 +81,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.92);backdrop-fi
 .deadline{font-size:11px;color:var(--muted);margin-left:auto;display:flex;align-items:center;gap:4px}
 .deadline.urgent{color:var(--red)}
 .deadline.soon{color:var(--yellow)}
+.click-hint{font-size:11px;color:var(--muted);margin-top:12px;text-align:right;opacity:0;transition:opacity .2s}
+.reg-card:hover .click-hint{opacity:1}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.deadline.urgent{color:var(--red);animation:pulse 2s infinite}
 
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
@@ -146,6 +150,7 @@ footer strong{color:var(--text)}
 </div>
 
 <div class="regs-grid" id="regsGrid"></div>
+<div style="text-align:center;padding:0 40px 20px;color:var(--muted);font-size:13px" id="resultsLabel"></div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
@@ -275,16 +280,20 @@ function renderCards(){
         <span class="cat-tag ${catClass(r.cat)}">${catLabel(r.cat)}</span>
         <span class="deadline ${urgencyClass(r.urgency)}">📅 ${r.deadline}</span>
       </div>
+      <div class="click-hint">Click for details →</div>
     </div>
   `).join('');
-  updateCounts();
+  const label=document.getElementById('resultsLabel');
+  label.textContent=filtered.length===REGS.length?`Showing all ${REGS.length} regulations`:`Showing ${filtered.length} of ${REGS.length} regulations`;
+  updateCounts(filtered);
 }
 
-function updateCounts(){
-  document.getElementById('cnt-total').textContent=REGS.length;
-  document.getElementById('cnt-active').textContent=REGS.filter(r=>r.status==='active').length;
-  document.getElementById('cnt-upcoming').textContent=REGS.filter(r=>r.status==='upcoming').length;
-  document.getElementById('cnt-monitor').textContent=REGS.filter(r=>r.status==='monitor').length;
+function updateCounts(filtered){
+  const set=filtered||REGS;
+  document.getElementById('cnt-total').textContent=set.length;
+  document.getElementById('cnt-active').textContent=set.filter(r=>r.status==='active').length;
+  document.getElementById('cnt-upcoming').textContent=set.filter(r=>r.status==='upcoming').length;
+  document.getElementById('cnt-monitor').textContent=set.filter(r=>r.status==='monitor').length;
 }
 
 function openModal(id){
