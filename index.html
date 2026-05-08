@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IT Compliance Tracker — FWD Portfolio · Nguyen Huu Anh</title>
+<meta name="description" content="Interactive IT & AI compliance regulation tracker dashboard for insurance industry. Tracks GDPR, EU AI Act, Vietnam laws and more."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--surface3:#1e2d45;
+  --primary:#3b82f6;--accent:#f97316;--green:#22c55e;--yellow:#eab308;--red:#ef4444;--purple:#a855f7;
+  --text:#f1f5f9;--muted:#94a3b8;--border:#1e293b;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:800;font-size:16px;color:var(--primary)}.logo span{color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-badge{background:linear-gradient(135deg,var(--primary),var(--purple));color:white;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
+
+/* HERO */
+.hero{padding:70px 40px 50px;max-width:1200px;margin:0 auto;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--primary);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px}
+.hero h1{font-size:46px;font-weight:800;line-height:1.15;margin-bottom:14px}
+.hero h1 span{background:linear-gradient(135deg,var(--primary),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:17px;color:var(--muted);max-width:580px;margin:0 auto}
+
+/* OVERVIEW CARDS */
+.overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;max-width:1200px;margin:0 auto;padding:0 40px 40px}
+.ov-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 20px;text-align:center;transition:transform .2s}
+.ov-card:hover{transform:translateY(-3px)}
+.ov-num{font-size:40px;font-weight:800;line-height:1}
+.ov-label{font-size:12px;color:var(--muted);margin-top:6px;font-weight:500}
+.ov-card.active .ov-num{color:var(--green)}
+.ov-card.upcoming .ov-num{color:var(--yellow)}
+.ov-card.monitor .ov-num{color:var(--primary)}
+.ov-card.total .ov-num{background:linear-gradient(135deg,var(--primary),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* CONTROLS */
+.controls{max-width:1200px;margin:0 auto;padding:0 40px 28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:220px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 14px 10px 38px;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--primary)}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.filter-btn:hover,.filter-btn.active{background:var(--primary);border-color:var(--primary);color:white}
+
+/* GRID */
+.regs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;max-width:1200px;margin:0 auto;padding:0 40px 60px}
+.reg-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.reg-card:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,0.3)}
+.reg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.reg-card.status-active::before{background:var(--green)}
+.reg-card.status-upcoming::before{background:var(--yellow)}
+.reg-card.status-monitor::before{background:var(--primary)}
+
+.reg-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.reg-icon{font-size:26px}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.status-badge.active{background:rgba(34,197,94,0.15);color:var(--green)}
+.status-badge.upcoming{background:rgba(234,179,8,0.15);color:var(--yellow)}
+.status-badge.monitor{background:rgba(59,130,246,0.15);color:var(--primary)}
+
+.reg-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.reg-full{font-size:12px;color:var(--muted);margin-bottom:10px}
+.reg-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+
+.reg-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cat-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.cat-ai{background:rgba(168,85,247,0.12);color:var(--purple)}
+.cat-privacy{background:rgba(59,130,246,0.12);color:var(--primary)}
+.cat-cyber{background:rgba(249,115,22,0.12);color:var(--accent)}
+.cat-financial{background:rgba(34,197,94,0.12);color:var(--green)}
+.cat-iso{background:rgba(234,179,8,0.12);color:var(--yellow)}
+
+.deadline{font-size:11px;color:var(--muted);margin-left:auto;display:flex;align-items:center;gap:4px}
+.deadline.urgent{color:var(--red)}
+.deadline.soon{color:var(--yellow)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:32px;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:none;color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:var(--red);color:white}
+.modal-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.modal-subtitle{font-size:13px;color:var(--muted);margin-bottom:20px}
+.modal-section{margin-bottom:18px}
+.modal-section h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:8px}
+.modal-section p,.modal-section li{font-size:13.5px;color:var(--muted);line-height:1.7}
+.modal-section ul{padding-left:18px}
+.modal-section li{margin-bottom:4px}
+.action-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;font-size:13px}
+.action-item .ai-icon{flex-shrink:0;margin-top:1px}
+
+/* FOOTER */
+footer{text-align:center;padding:36px 40px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+footer strong{color:var(--text)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
+.empty-icon{font-size:48px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">IT<span>Compliance</span>Tracker</div>
+  <div class="nav-right">
+    <span style="font-size:13px;color:var(--muted)">Last updated: May 2026</span>
+    <span class="nav-badge">By Nguyen Huu Anh</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">📋 IT Governance & Security</div>
+  <h1>IT & AI <span>Compliance</span> Tracker</h1>
+  <p>Monitor key regulations affecting the insurance technology landscape — status, deadlines, and actionable summaries in one place.</p>
+</div>
+
+<div class="overview" id="overview">
+  <div class="ov-card total"><div class="ov-num" id="cnt-total">8</div><div class="ov-label">Total Regulations</div></div>
+  <div class="ov-card active"><div class="ov-num" id="cnt-active">4</div><div class="ov-label">🟢 Active / In Force</div></div>
+  <div class="ov-card upcoming"><div class="ov-num" id="cnt-upcoming">3</div><div class="ov-label">🟡 Upcoming / Transition</div></div>
+  <div class="ov-card monitor"><div class="ov-num" id="cnt-monitor">1</div><div class="ov-label">🔵 Monitoring</div></div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search regulations..." oninput="renderCards()"/>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" id="filter-all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" id="filter-ai" onclick="setFilter('ai',this)">🤖 AI</button>
+    <button class="filter-btn" id="filter-privacy" onclick="setFilter('privacy',this)">🔒 Data Privacy</button>
+    <button class="filter-btn" id="filter-cyber" onclick="setFilter('cyber',this)">🛡️ Cybersecurity</button>
+    <button class="filter-btn" id="filter-financial" onclick="setFilter('financial',this)">💰 Financial</button>
+    <button class="filter-btn" id="filter-iso" onclick="setFilter('iso',this)">📜 ISO/Standards</button>
+  </div>
+</div>
+
+<div class="regs-grid" id="regsGrid"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<footer>
+  <strong>IT Compliance Tracker</strong> · Built by Nguyen Huu Anh · FWD IT Internship Portfolio 2026<br/>
+  <span style="font-size:12px;margin-top:6px;display:block">Sources: EU Official Journal · Vietnam Government Portal · NIST · ISO · EIOPA</span>
+</footer>
+
+<script>
+const REGS = [
+  {
+    id:1, icon:"🇪🇺", name:"EU AI Act", full:"Regulation (EU) 2024/1689",
+    status:"upcoming", cat:"ai",
+    deadline:"Aug 2026", urgency:"urgent",
+    desc:"The world's first comprehensive AI law. Classifies AI systems by risk level. Insurance AI used for underwriting or claims decisions classified as 'High Risk' — requires registration, audit logs, and human oversight.",
+    impact:"High impact on FWD: any AI scoring model for policy pricing or claims must be registered with EU AI Office and maintain bias audit logs.",
+    actions:["Register high-risk AI systems with EU AI Office","Implement explainability logs for underwriting AI","Conduct AI bias assessments quarterly","Train staff on prohibited AI practices"],
+    refs:["https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689"]
+  },
+  {
+    id:2, icon:"🔒", name:"GDPR", full:"General Data Protection Regulation (EU) 2016/679",
+    status:"active", cat:"privacy",
+    deadline:"Ongoing", urgency:"normal",
+    desc:"EU's flagship data privacy regulation. Applies to any org processing EU resident data. Requires lawful basis for processing, data minimization, breach notification within 72 hours, and Data Protection Officer (DPO) appointment.",
+    impact:"Affects FWD's marketing campaigns, customer data storage, and cross-border data transfers to Vietnam HQ. DPA fines up to €20M or 4% global revenue.",
+    actions:["Maintain records of processing activities (ROPA)","Ensure 72-hour breach notification process is in place","Review data transfer agreements (SCCs)","Conduct annual DPIA for high-risk processing"],
+    refs:["https://gdpr.eu"]
+  },
+  {
+    id:3, icon:"🇻🇳", name:"Vietnam PDPD", full:"Decree 13/2023/ND-CP on Personal Data Protection",
+    status:"active", cat:"privacy",
+    deadline:"Ongoing", urgency:"normal",
+    desc:"Vietnam's first personal data protection law. Establishes 'basic' and 'sensitive' personal data categories. Insurance health data classified as sensitive. Requires explicit consent, data impact assessments, and cross-border transfer approvals.",
+    impact:"Direct impact: FWD must obtain explicit consent for health data in policy applications, appoint a data protection department, and register cross-border data transfers with Ministry of Public Security.",
+    actions:["Audit all sensitive data (health, biometric) processing","Update consent forms to meet PDPD requirements","Register with Ministry of Public Security for cross-border transfers","Document data impact assessments for health data processing"],
+    refs:["https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Nghi-dinh-13-2023-ND-CP-bao-ve-du-lieu-ca-nhan-562357.aspx"]
+  },
+  {
+    id:4, icon:"🛡️", name:"Vietnam Cybersecurity Law", full:"Law No. 24/2018/QH14",
+    status:"active", cat:"cyber",
+    deadline:"Ongoing", urgency:"normal",
+    desc:"Governs cybersecurity for critical information infrastructure in Vietnam. Financial institutions (incl. insurance) are critical infrastructure operators — must store Vietnamese user data locally, comply with Ministry of Public Security inspections.",
+    impact:"FWD must maintain local data storage for Vietnamese customers, conduct annual cybersecurity audits, and report serious incidents to the Ministry of Information and Communications within 24 hours.",
+    actions:["Ensure Vietnamese customer data stored on local servers","Conduct annual cybersecurity assessment","Establish 24-hour incident response and reporting protocol","Register critical systems with national cybersecurity authority"],
+    refs:["https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Luat-An-ninh-mang-2018-333807.aspx"]
+  },
+  {
+    id:5, icon:"📜", name:"ISO/IEC 27001:2022", full:"Information Security Management System",
+    status:"active", cat:"iso",
+    deadline:"Oct 2025 (transition)", urgency:"normal",
+    desc:"International standard for information security management. Defines 93 controls across 4 domains. 2022 update added cloud security, threat intelligence, and supply chain security controls. Certification requires 3-year audit cycle.",
+    impact:"FWD IT must update existing ISMS to 27001:2022 by Oct 2025. Key new controls: cloud asset management (#5.23), data masking (#8.11), and web filtering (#8.23).",
+    actions:["Gap analysis: 27001:2013 vs 27001:2022 controls","Implement new cloud security controls","Update Statement of Applicability (SoA)","Schedule transition audit with certification body"],
+    refs:["https://www.iso.org/standard/27001"]
+  },
+  {
+    id:6, icon:"🤖", name:"NIST AI RMF", full:"NIST AI Risk Management Framework 1.0",
+    status:"monitor", cat:"ai",
+    deadline:"Voluntary", urgency:"normal",
+    desc:"US framework for managing AI risks across 4 functions: GOVERN, MAP, MEASURE, MANAGE. Widely adopted by global enterprises as best practice. Aligns with EU AI Act requirements. Provides playbooks for bias testing, explainability, and incident response.",
+    impact:"FWD can adopt NIST AI RMF voluntarily to demonstrate responsible AI governance to regulators and customers. Aligns with EU AI Act audit requirements for high-risk AI.",
+    actions:["Map existing AI systems using NIST MAP function","Implement AI risk measurement (bias, accuracy, drift)","Establish AI incident response playbook","Document model cards for customer-facing AI systems"],
+    refs:["https://www.nist.gov/system/files/documents/2023/01/26/AI%20RMF%201.0.pdf"]
+  },
+  {
+    id:7, icon:"💳", name:"PCI-DSS v4.0", full:"Payment Card Industry Data Security Standard",
+    status:"upcoming", cat:"financial",
+    deadline:"Mar 2025 (required)", urgency:"soon",
+    desc:"Security standard for organizations handling payment card data. v4.0 adds 64 new requirements including MFA for all CDE access, customized approach for controls, and targeted risk analysis. All v3.2.1 requirements retired March 2024.",
+    impact:"FWD payment processing systems must comply with PCI-DSS v4.0. Key changes: mandatory MFA for admin access, enhanced phishing-resistant auth, and annual penetration testing of cardholder data environment.",
+    actions:["Complete gap analysis vs PCI-DSS v4.0 requirements","Implement MFA for all cardholder data environment access","Update network segmentation documentation","Schedule QSA audit for v4.0 compliance validation"],
+    refs:["https://www.pcisecuritystandards.org/document_library/"]
+  },
+  {
+    id:8, icon:"🏗️", name:"ISO/IEC 42001:2023", full:"Artificial Intelligence Management System",
+    status:"upcoming", cat:"iso",
+    deadline:"2026 Adoption Target", urgency:"soon",
+    desc:"The world's first AI management system standard. Provides requirements for establishing, implementing, and improving an AI management system. Covers AI policy, impact assessment, risk management, and transparency obligations. Certifiable standard.",
+    impact:"Financial services companies adopting ISO 42001 demonstrate structured AI governance to regulators. Supports EU AI Act compliance by providing documented evidence of AI risk management practices.",
+    actions:["Conduct ISO 42001 gap assessment","Develop AI policy and objectives document","Implement AI impact assessment process","Plan certification timeline with audit body"],
+    refs:["https://www.iso.org/standard/81230.html"]
+  }
+];
+
+let activeFilter = 'all';
+
+function statusLabel(s){return s==='active'?'Active':s==='upcoming'?'Upcoming':'Monitoring'}
+function urgencyClass(u){return u==='urgent'?'urgent':u==='soon'?'soon':''}
+function catClass(c){return `cat-${c}`}
+function catLabel(c){return{ai:'🤖 AI',privacy:'🔒 Privacy',cyber:'🛡️ Cybersecurity',financial:'💰 Financial',iso:'📜 ISO/Standard'}[c]||c}
+
+function setFilter(f, btn){
+  activeFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function renderCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const grid=document.getElementById('regsGrid');
+  const filtered=REGS.filter(r=>{
+    const matchCat=activeFilter==='all'||r.cat===activeFilter;
+    const matchQ=!q||r.name.toLowerCase().includes(q)||r.full.toLowerCase().includes(q)||r.desc.toLowerCase().includes(q);
+    return matchCat&&matchQ;
+  });
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div>No regulations found matching your search.</div></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(r=>`
+    <div class="reg-card status-${r.status}" onclick="openModal(${r.id})" id="card-${r.id}">
+      <div class="reg-top">
+        <span class="reg-icon">${r.icon}</span>
+        <span class="status-badge ${r.status}">${statusLabel(r.status)}</span>
+      </div>
+      <div class="reg-name">${r.name}</div>
+      <div class="reg-full">${r.full}</div>
+      <div class="reg-desc">${r.desc.substring(0,120)}...</div>
+      <div class="reg-meta">
+        <span class="cat-tag ${catClass(r.cat)}">${catLabel(r.cat)}</span>
+        <span class="deadline ${urgencyClass(r.urgency)}">📅 ${r.deadline}</span>
+      </div>
+    </div>
+  `).join('');
+  updateCounts();
+}
+
+function updateCounts(){
+  document.getElementById('cnt-total').textContent=REGS.length;
+  document.getElementById('cnt-active').textContent=REGS.filter(r=>r.status==='active').length;
+  document.getElementById('cnt-upcoming').textContent=REGS.filter(r=>r.status==='upcoming').length;
+  document.getElementById('cnt-monitor').textContent=REGS.filter(r=>r.status==='monitor').length;
+}
+
+function openModal(id){
+  const r=REGS.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('modal-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <span style="font-size:36px">${r.icon}</span>
+      <div>
+        <div class="modal-title">${r.name}</div>
+        <div style="font-size:12px;color:var(--muted)">${r.full}</div>
+      </div>
+      <span class="status-badge ${r.status}" style="margin-left:auto">${statusLabel(r.status)}</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <span class="cat-tag ${catClass(r.cat)}">${catLabel(r.cat)}</span>
+      <span class="deadline ${urgencyClass(r.urgency)}">📅 Deadline: ${r.deadline}</span>
+    </div>
+    <div class="modal-section">
+      <h4>Overview</h4>
+      <p>${r.desc}</p>
+    </div>
+    <div class="modal-section">
+      <h4>Business Impact for Insurance</h4>
+      <p>${r.impact}</p>
+    </div>
+    <div class="modal-section">
+      <h4>Action Items</h4>
+      ${r.actions.map(a=>`<div class="action-item"><span class="ai-icon">✅</span><span>${a}</span></div>`).join('')}
+    </div>
+    <div class="modal-section">
+      <h4>References</h4>
+      ${r.refs.map(ref=>`<div style="margin-bottom:4px"><a href="${ref}" target="_blank" style="color:var(--primary);font-size:13px;word-break:break-all">${ref}</a></div>`).join('')}
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeModalDirect();});
+
+renderCards();
+</script>
+</body>
+</html>
